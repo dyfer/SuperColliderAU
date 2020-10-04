@@ -6,14 +6,14 @@ before_install:
  # copied from $TRAVIS_BUILD_DIR/supercollider/.travis/before-install-osx.sh:
  - export HOMEBREW_NO_AUTO_UPDATE=1
  - export HOMEBREW_NO_INSTALL_CLEANUP=1
- - brew install libsndfile ccache qt5
+ - brew install libsndfile ccache
  - export PATH="/usr/local/opt/ccache/libexec:$PATH"
  - gem install xcpretty
 before_script: 
  - mkdir $TRAVIS_BUILD_DIR/supercollider/BUILD
  - mkdir $TRAVIS_BUILD_DIR/BUILD
  - cd $TRAVIS_BUILD_DIR/supercollider/BUILD
- - cmake -G Xcode -DCMAKE_PREFIX_PATH=`brew --prefix qt5`  ..
+ - cmake -G Xcode -DSC_QT=OFF  ..
 script:
  - cmake --build $TRAVIS_BUILD_DIR/supercollider/BUILD --target install --config RelWithDebInfo -- -quiet
  - cd $TRAVIS_BUILD_DIR/BUILD
