@@ -9,7 +9,7 @@ jobs:
       BUILD_PATH: ${{ github.workspace }}/build
       DEVELOPER_DIR: '/Applications/Xcode_16.0.app/Contents/Developer'
       MACOSX_DEPLOYMENT_TARGET: '10.15'
-      CMAKE_OSX_ARCHITECTURES: 'x86_64;arm64'
+      CMAKE_OSX_ARCHITECTURES: 'x86_64' # 'x86_64;arm64'
       ARTIFACT_NAME: SuperColliderAU
     steps:
     - name: checkout repository
@@ -55,7 +55,7 @@ jobs:
       run: |
         brew uninstall --ignore-dependencies readline || true
         cd $GITHUB_WORKSPACE/..
-        curl -L https://ftp.gnu.org/gnu/readline/readline-8.3-rc2.tar.gz --output readline.tar.gz
+        curl -L https://ftp.gnu.org/gnu/readline/readline-8.2.tar.gz --output readline.tar.gz
         tar xfvz readline.tar.gz
         cd readline*/
         ./configure CFLAGS="-arch x86_64 -arch arm64 -mmacosx-version-min=10.15" LDFLAGS="-arch x86_64 -arch arm64 -mmacosx-version-min=10.15" --prefix=/usr/local
