@@ -3,16 +3,17 @@ on:
   [push, pull_request]
 jobs:
   build:
-    runs-on: macos-10.15
+    runs-on: macos-15
     env:
       SC_BUILD_PATH: ${{ github.workspace }}/supercollider/build
       BUILD_PATH: ${{ github.workspace }}/build
-      DEVELOPER_DIR: '/Applications/Xcode_10.3.app/Contents/Developer'
-      MACOSX_DEPLOYMENT_TARGET: '10.10'
+      DEVELOPER_DIR: '/Applications/Xcode_16.0.app/Contents/Developer'
+      MACOSX_DEPLOYMENT_TARGET: '10.15'
+      CMAKE_OSX_ARCHITECTURES: '"x86_64;arm64"'
       ARTIFACT_NAME: SuperColliderAU
     steps:
     - name: checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         submodules: recursive
     - name: prepare timestamp for cache
@@ -21,13 +22,13 @@ jobs:
         echo "::set-output name=stamp::$(date '+%Y-%m-%d')"
         echo "::set-output name=week::$(date '+%V')"
     - name: cache ccache
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/Library/Caches/ccache
         key: ${{ runner.os }}-ccache-${{ steps.current-date.outputs.stamp }}
         restore-keys: ${{ runner.os }}-ccache
     - name: cache homebrew downloads
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: cache-homebrew
       with:
         path: ~/Library/Caches/Homebrew/downloads
@@ -37,7 +38,7 @@ jobs:
       run: rm -rf $(brew --cache)
     - name: install dependencies
       run: |
-        brew install ccache qt5
+        brew install ccache
         # add ccamke to PATH - see https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions
         echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
     - name: build libsndfile # to make it compatible with older OSes (lower deployment target)
@@ -49,13 +50,13 @@ jobs:
         tar xfvz libsndfile.tar.bz2
         cd libsndfile*/
         mkdir build && cd build
-        cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_C_FLAGS="-Wall -Wextra" -DCMAKE_INSTALL_PREFIX=/usr/local ..
+        cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_C_FLAGS="-Wall -Wextra" -DCMAKE_INSTALL_PREFIX=/usr/local ..
         cmake --build . --target install
     - name: configure and build SuperCollider
       run: |
         mkdir $SC_BUILD_PATH && cd $SC_BUILD_PATH
-        cmake -G Xcode -DCMAKE_PREFIX_PATH=`brew --prefix qt5` -DSUPERNOVA=OFF ..
-        cmake --build . --target install --config RelWithDebInfo -- -quiet
+        cmake -G Xcode -D SUPERNOVA=OFF  -D SC_QT=OFF ..
+        cmake --build . --config RelWithDebInfo -- -quiet
     - name: configure SuperColliderAU
       run: |
         mkdir $BUILD_PATH && cd $BUILD_PATH
@@ -75,7 +76,7 @@ jobs:
       working-directory: ${{ env.BUILD_PATH }}
       run: zip -r $ARTIFACT_NAME.zip SuperColliderAU.component
     - name: upload artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ env.ARTIFACT_NAME }}
         path: ${{ env.BUILD_PATH }}/${{ env.ARTIFACT_NAME }}.zip
