@@ -51,7 +51,7 @@ jobs:
         cd libsndfile*/
         mkdir build && cd build
         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_C_FLAGS="-Wall -Wextra" -DCMAKE_INSTALL_PREFIX=/usr/local ..
-        cmake --build . --target install
+        sudo cmake --build . --target install
     - name: configure and build SuperCollider
       run: |
         mkdir $SC_BUILD_PATH && cd $SC_BUILD_PATH
