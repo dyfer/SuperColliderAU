@@ -43,7 +43,7 @@ jobs:
         echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
     - name: build libsndfile # to make it compatible with older OSes (lower deployment target)
       run: |
-        brew uninstall --ignore-dependencies libsndfile
+        brew uninstall --ignore-dependencies libsndfile || true
         brew install automake
         cd $GITHUB_WORKSPACE/..
         curl -L https://github.com/libsndfile/libsndfile/releases/download/1.0.31/libsndfile-1.0.31.tar.bz2 --output libsndfile.tar.bz2
