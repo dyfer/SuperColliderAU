@@ -19,8 +19,8 @@ jobs:
     - name: prepare timestamp for cache
       id: current-date
       run: |
-        echo "::set-output name=stamp::$(date '+%Y-%m-%d')"
-        echo "::set-output name=week::$(date '+%V')"
+        echo "stamp=$(date '+%Y-%m-%d')" >> $GITHUB_OUTPUT
+        echo "week=$(date '+%U')" >> $GITHUB_OUTPUT
     - name: cache ccache
       uses: actions/cache@v4
       with:
