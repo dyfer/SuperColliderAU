@@ -38,24 +38,33 @@ jobs:
       run: rm -rf $(brew --cache)
     - name: install dependencies
       run: |
-        brew install ccache
+        brew install ccache automake
         # add ccamke to PATH - see https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions
         echo "/usr/local/opt/ccache/libexec" >> $GITHUB_PATH
     - name: build libsndfile # to make it compatible with older OSes (lower deployment target)
       run: |
         brew uninstall --ignore-dependencies libsndfile || true
-        brew install automake
         cd $GITHUB_WORKSPACE/..
-        curl -L https://github.com/libsndfile/libsndfile/releases/download/1.0.31/libsndfile-1.0.31.tar.bz2 --output libsndfile.tar.bz2
-        tar xfvz libsndfile.tar.bz2
+        curl -L https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz --output libsndfile.tar.xz
+        tar xfvJ libsndfile.tar.xz
         cd libsndfile*/
         mkdir build && cd build
         cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_C_FLAGS="-Wall -Wextra" -DCMAKE_INSTALL_PREFIX=/usr/local ..
         sudo cmake --build . --target install
+    - name: build readline # to enable universal builds
+      run: |
+        brew uninstall --ignore-dependencies readline || true
+        cd $GITHUB_WORKSPACE/..
+        curl -L https://ftp.gnu.org/gnu/readline/readline-8.3-rc2.tar.gz --output readline.tar.gz
+        tar xfvz readline.tar.gz
+        cd readline*/
+        ./configure CFLAGS="-arch x86_64 -arch arm64 -mmacosx-version-min=10.15" LDFLAGS="-arch x86_64 -arch arm64 -mmacosx-version-min=10.15" --prefix=/usr/local
+        make
+        sudo make install
     - name: configure and build SuperCollider
       run: |
         mkdir $SC_BUILD_PATH && cd $SC_BUILD_PATH
-        cmake -G Xcode -D SUPERNOVA=OFF  -D SC_QT=OFF ..
+        cmake -G Xcode -D SUPERNOVA=OFF -D SC_QT=OFF ..
         cmake --build . --config RelWithDebInfo -- -quiet
     - name: configure SuperColliderAU
       run: |
